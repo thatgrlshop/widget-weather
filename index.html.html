@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather & Time Widget</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 10px;
+    }
+    #image-widget {
+      text-align: center;
+    }
+    p {
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="image-widget">Caricamento in corso...</div>
+
+  <script>
+    const apiKey = '27b416b2a71c83d71c2b626ce840e29f'; // Sostituisci con la tua chiave API di OpenWeatherMap
+
+    async function fetchWeather(latitude, longitude) {
+      try {
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        const weather = data.weather[0].main;
+        const hour = new Date().getHours();
+
+        const imageSrc = getWidgetImage(weather, hour);
+
+        document.getElementById('image-widget').innerHTML = `<img src="${imageSrc}" alt="Dynamic Weather Image">`;
+      } catch (error) {
+        console.error('Errore nel recuperare i dati meteo:', error);
+        document.getElementById('image-widget').innerHTML = '<p>Errore nel caricamento dei dati meteo. Riprova più tardi.</p>';
+      }
+    }
+
+    function getWidgetImage(weather, hour) {
+      const isDay = hour >= 7 && hour < 19; // Verifica se è giorno
+
+      if (weather === 'Clear') {
+        return isDay 
+          ? 'https://i.ibb.co/1QbkrC1/406-F6892-81-B0-4008-8297-03-E494653697.jpg' // Giorno soleggiato
+          : 'https://i.ibb.co/0fDcKkh/8-C9-B557-C-0-D07-478-D-8-B67-BCA3-C96-E5-A24.jpg'; // Notte limpida
+      } else if (weather === 'Clouds') {
+        return isDay 
+          ? 'https://i.ibb.co/d0jsQzT/78866-BD7-D276-4-ADD-B092-11-A4-BD0-E43-E4.jpg' // Giorno nuvoloso
+          : 'https://i.ibb.co/ZM7XTcj/B6-C7-BBCF-0-C80-486-E-9-F8-D-6-A22921-EA174.jpg'; // Notte nuvolosa
+      } else if (weather === 'Rain') {
+        return isDay 
+          ? 'https://i.ibb.co/rk4tTsX/19-C3-B69-B-9-AF6-4-BB4-A889-58-F2714-DB369.jpg' // Giorno piovoso
+          : 'https://i.ibb.co/tLLJkRT/07-B6-A689-D255-4380-A424-65-B5-F3-CE277-C.jpg'; // Notte piovosa
+      } else {
+        return isDay 
+          ? 'https://i.ibb.co/1QbkrC1/406-F6892-81-B0-4008-8297-03-E494653697.jpg' // Condizione sconosciuta di giorno
+          : 'https://i.ibb.co/0fDcKkh/8-C9-B557-C-0-D07-478-D-8-B67-BCA3-C96-E5-A24.jpg'; // Condizione sconosciuta di notte
+      }
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        fetchWeather(latitude, longitude);
+      },
+      (error) => {
+        console.error("Errore nella geolocalizzazione:", error);
+        document.getElementById('image-widget').innerHTML = '<p>Impossibile ottenere la posizione. Assicurati di aver consentito l\'accesso alla posizione.</p>';
+      }
+    );
+  </script>
+</body>
+</html>
